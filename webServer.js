@@ -51,6 +51,14 @@ app.get('/api/dashboard', authenticateToken, (req, res) => {
     });
 });
 
+app.get('/api/settings', authenticateToken, (req, res) => {
+    console.log(req);
+    res.json({
+        success: true,
+        error: false,
+        msg: 'Token verified users can only able to view this page!'
+    });
+});
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
