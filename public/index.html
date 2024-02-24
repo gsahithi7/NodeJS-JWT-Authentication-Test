@@ -3,24 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
+    <title id="pageTitle">Login Page</title>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        form, p, button {
+            margin-bottom: 10px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            padding: 10px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
-<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 <body>
-    <h2>Login</h2>
-    <form id="loginForm" onsubmit="login(); return false;">
-        <div>
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-        </div>
-        <div>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit">Login</button>
-    </form>
+    
+    <div id="container">
+        <h2 id="header">Login</h2>
+        <form id="loginForm" onsubmit="login(); return false;">
+            <div>
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+    </div>
 
-   
     <script>
         function login() {
             const username = document.getElementById('username').value;
@@ -32,14 +67,78 @@
                     if (data.success) {
                         localStorage.setItem('token', data.token);
                         alert(data.msg);
+                        displayDashboard();
                     } else {
                         alert(data.msg);
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    alert('Something went wrong!');
+                    alert(error.response.data.msg);
                 });
+        }
+
+        function displayDashboard() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Please Login!");
+                window.location.href = '/';
+            } else {
+                axios.get('/api/dashboard', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    document.getElementById("container").innerHTML = `
+                        <h2>Welcome to the Dashboard!</h2>
+                        <p>This page is visible only if you are authenticated!</p>
+                        <p>${response.data.msg}</p>
+                        <button onclick="displaySettings()">Settings!</button>
+                        <button onclick="logout()">Logout</button>
+                    `;
+                    document.getElementById("pageTitle").innerText = "Dashboard";
+                    history.pushState(null, '', '/dashboard');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading dashboard.');
+                });
+            }
+        }
+
+        function displaySettings() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert("Please Login!");
+                window.location.href = '/';
+            } else {
+                axios.get('/api/settings', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                })
+                .then(response => {
+                    document.getElementById("container").innerHTML = `
+                        <h2>Settings</h2>
+                        <p>This page is visible only if you are authenticated!</p>
+                        <p>${response.data.msg}</p>
+                        <button onclick="displayDashboard()">Dashboard!</button>
+                        <button onclick="logout()">Logout</button>
+                    `;
+                    document.getElementById("pageTitle").innerText = "Settings";
+                    history.pushState(null, '', '/settings');
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error loading settings.');
+                });
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('token');
+            window.location.href='/'; 
         }
     </script>
 </body>

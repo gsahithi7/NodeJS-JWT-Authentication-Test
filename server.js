@@ -28,7 +28,7 @@ app.post('/auth/login', (req, res) => {
 
     const user = userData.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === password);
     if (user) {
-        const generatedToken = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '30m' });
+        const generatedToken = jwt.sign({ id: user.id, username: user.username }, secretKey, { expiresIn: '3m' });
         res.status(200).json({
             success: true,
             token: generatedToken,
